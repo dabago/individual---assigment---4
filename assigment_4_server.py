@@ -43,11 +43,16 @@ def upload_graph():
 def find_all_paths(graph, start, end, path=[]):
     path = path + [start]
     
-    if start or end not in graph.keys():
+    if start not in graph.keys():
         return False
     
     if start == end:
         return [path]
+    
+    if end not in graph.keys():
+        return True
+    
+   
     if not start in graph:
         return []
     paths = []
@@ -62,6 +67,14 @@ def find_all_paths(graph, start, end, path=[]):
     
 def degrees_of_separation(graph, start, end):
     all_paths = find_all_paths(graph, start, end)
+    if all_paths == False:
+        degrees = "Check origin"
+        return degrees
+    
+    elif all_paths == True:
+        degrees = "Check destination"
+        return degrees
+    
     degrees = None
     
     for path in all_paths:
@@ -75,19 +88,22 @@ def degrees_of_separation(graph, start, end):
 
 @server.route("/degrees-of-separation/<origin>/<destination>") 
 def getting_degrees(origin, destination):
-    if graph["graph"] == None:
-        return jsonify ("No  graph uploaded. Please upload graph")
-    else:
-        degrees = degrees_of_separation(graph["graph"], origin, destination)
-        if degrees == None:
-            return jsonify ("There is no connection")
-        else:
-            return jsonify({"The degree/s of separation is/are":degrees})
+    degrees = degrees_of_separation(graph["graph"], origin, destination)
+    
+
+    
+    if degrees == None:
+        return jsonify ("There is no connection")
+    
+    if degrees == "Check origin":
+        return jsonify("{} not in graph. Please check origin and update request".format(origin))
+    
+    if degrees == "Check destination":
+        return jsonify("{} not in graph. Please check destination and update request".format(destination))
         
-            
-
-
-
+    else:
+        return jsonify({"The degree/s of separation is/are":degrees})
+        
 
 
 
