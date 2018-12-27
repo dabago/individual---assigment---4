@@ -36,8 +36,6 @@ def upload_graph(graph):
     request = requests.post("http://localhost:5000/upload-graph", json=data).json()
     return request
 
-
-
 def get_degrees_of_separation(origin, destination): 
     data = graph
     request = requests.get('http://localhost:5000/degrees-of-separation/{}/{}'.format(origin, destination), json=data).json()

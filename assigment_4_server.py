@@ -42,6 +42,10 @@ def upload_graph():
 
 def find_all_paths(graph, start, end, path=[]):
     path = path + [start]
+    
+    if start or end not in graph.keys():
+        return False
+    
     if start == end:
         return [path]
     if not start in graph:
@@ -58,9 +62,8 @@ def find_all_paths(graph, start, end, path=[]):
     
 def degrees_of_separation(graph, start, end):
     all_paths = find_all_paths(graph, start, end)
-    
-    
     degrees = None
+    
     for path in all_paths:
         steps = 0
         for step in path:
@@ -82,18 +85,6 @@ def getting_degrees(origin, destination):
             return jsonify({"The degree/s of separation is/are":degrees})
         
             
-#
-#def degrees_handler(origin, destination):
-#    if usergraph["currentusergraph"] == None:
-#        return jsonify({"message":"Please upload a graph first", "data":None})
-#    else:
-#        degrees = degrees_of_separation(usergraph["currentusergraph"], origin, destination)
-#        if degrees == None:
-#            return jsonify({"message":"Origin and Destination are not connected!","degrees_of_separation":degrees,"origin":origin, "destination":destination})
-#        return jsonify({"message":"Degrees of separation for Current Graph", "degrees_of_separation":degrees,"origin":origin, "destination":destination})
-#
-
-
 
 
 
