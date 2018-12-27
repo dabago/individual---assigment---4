@@ -4,41 +4,105 @@ from flask import Flask, jsonify, request
 
 server = Flask("Graph Server")
 
-graph = {}
-
+graph = {"graph":None}
 
 
 @server.route("/mygraph",  methods=["GET"])
 def mygraph():
-    body = request.get_json()
-    return jsonify(body)
+    if graph["graph"] == None:
+        return jsonify("No graph uploaded. Please upload graph")
     
+    else:
+        return jsonify({"This is your current graph" : graph})
+        
     
 
 @server.route("/upload-graph", methods=["POST"])
 def upload_graph():
     body = request.get_json()
-    return jsonify(body)
-
-@server.route("/degrees-of-separation/<origin>/<destination>", methods=["GET"])
-def find_path(origin, destination, graph='', path=[]):
+    
+    if type(body) == dict:
         
-    graph = request.get_json()
-    
-    path = path + [origin]
-    
-    if origin == destination:
-        return jsonify(len(path)-1)
-    
-    if origin not in graph:
-        return jsonify("Origin not in graph")
-    
-    for node in graph[origin]:
-        if node not in path:
-            newpath = find_path(node, destination, graph, path)
-            if newpath is not None:
-                return newpath
-  
-    return jsonify(None)
+        if body == {}:
+            return jsonify("Please upload a valid graph, not an empty one")
+
+        if body.values() != None:
+            values = body.values()
+            for i in values:
+                if type(i) != list:
+                    return jsonify("Please upload a valid graph. Check values")
                 
+   
+            graph ["graph"] = body
+            return jsonify({"This is your graph":graph}) 
+        
+    else:
+        return jsonify("Please upload a valid graph. It must be a dictionary")
+    
+
+def find_all_paths(graph, start, end, path=[]):
+    path = path + [start]
+    if start == end:
+        return [path]
+    if not start in graph:
+        return []
+    paths = []
+    for conn in graph[start]:
+        if conn not in path:
+            newpaths = find_all_paths(graph, conn, end, path)
+            for newpath in newpaths:
+                paths.append(newpath)
+    return paths
+
+# I am one Degree away from me as a basic concept. 
+    
+def degrees_of_separation(graph, start, end):
+    all_paths = find_all_paths(graph, start, end)
+    
+    
+    degrees = None
+    for path in all_paths:
+        steps = 0
+        for step in path:
+            steps += 1
+        if degrees is None or steps < degrees:
+            degrees = steps   
+    return degrees
+
+
+@server.route("/degrees-of-separation/<origin>/<destination>") 
+def getting_degrees(origin, destination):
+    if graph["graph"] == None:
+        return jsonify ("No  graph uploaded. Please upload graph")
+    else:
+        degrees = degrees_of_separation(graph["graph"], origin, destination)
+        if degrees == None:
+            return jsonify ("There is no connection")
+        else:
+            return jsonify({"The degree/s of separation is/are":degrees})
+        
+            
+#
+#def degrees_handler(origin, destination):
+#    if usergraph["currentusergraph"] == None:
+#        return jsonify({"message":"Please upload a graph first", "data":None})
+#    else:
+#        degrees = degrees_of_separation(usergraph["currentusergraph"], origin, destination)
+#        if degrees == None:
+#            return jsonify({"message":"Origin and Destination are not connected!","degrees_of_separation":degrees,"origin":origin, "destination":destination})
+#        return jsonify({"message":"Degrees of separation for Current Graph", "degrees_of_separation":degrees,"origin":origin, "destination":destination})
+#
+
+
+
+
+
+
+
+
+
+
+
+
 server.run()
+
